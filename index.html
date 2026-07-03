@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Dashboard</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
+
+
+const USD = 44;
+const fmt = n => n.toLocaleString("uk-UA");
+const fmtPct = n => `${n.toFixed(1)}%`;
+
+const DATA = {
+  VRN: {
+    apr: {
+      label:"Квітень", orders:52, revenue:234229, aov:4504,
+      cats:[
+        {name:"Содоструйки",orders:18,qty:21,revenue:129225,color:"#10b981"},
+        {name:"Скалери",orders:2,qty:5,revenue:25480,color:"#3b82f6"},
+        {name:"Наконечники",orders:7,qty:7,revenue:40977,color:"#8b5cf6"},
+        {name:"Насадки",orders:19,qty:65,revenue:20427,color:"#ef4444"},
+        {name:"Порошки",orders:5,qty:10,revenue:7120,color:"#f59e0b"},
+        {name:"Лампи",orders:1,qty:1,revenue:11000,color:"#06b6d4"},
+      ],
+      camps:[
+        {name:"Нак + Содо",spentUSD:1026.16,reach:35107,clicks:2596,purchases:25,rev:170202},
+        {name:"Скалери",spentUSD:95.46,reach:5224,clicks:1380,purchases:2,rev:25480},
+        {name:"Насадки",spentUSD:326.36,reach:21591,clicks:1237,purchases:19,rev:20427},
+        {name:"Порошки",spentUSD:146.54,reach:10923,clicks:362,purchases:5,rev:7120},
+        {name:"Лампи",spentUSD:32.13,reach:1828,clicks:93,purchases:1,rev:11000},
+      ],
+      leads:null,
+      traffic:null,
+      cancelled:{orders:20,revenue:158130},
+    },
+    may: {
+      label:"Травень", orders:56, revenue:337575, aov:6028,
+      cats:[
+        {name:"Содоструйки",orders:22,qty:30,revenue:206320,color:"#10b981"},
+        {name:"Скалери",orders:2,qty:2,revenue:82225,color:"#3b82f6"},
+        {name:"Наконечники",orders:3,qty:4,revenue:10040,color:"#8b5cf6"},
+        {name:"Насадки",orders:20,qty:54,revenue:28940,color:"#ef4444"},
+        {name:"Порошки",orders:9,qty:15,revenue:10050,color:"#f59e0b"},
+        {name:"Лампи",orders:0,qty:0,revenue:0,color:"#06b6d4"},
+      ],
+      camps:[
+        {name:"Нак + Содо",spentUSD:954.21,reach:230807,clicks:1805,purchases:25,rev:216360},
+        {name:"Скалери",spentUSD:568.09,reach:179481,clicks:1040,purchases:2,rev:82225},
+        {name:"Насадки",spentUSD:682.62,reach:150602,clicks:2160,purchases:20,rev:28940},
+        {name:"Порошки",spentUSD:494.96,reach:107862,clicks:935,purchases:9,rev:10050},
+        {name:"Лампи",spentUSD:0,reach:0,clicks:0,purchases:0,rev:0},
+      ],
+      leads:null,
+      traffic:{spentUSD:31.09,reach:41230,clicks:653},
+      cancelled:{orders:15,revenue:43070},
+      funnel:{users:4924,views:2944,purchases:108},
+    },
+    jun: {
+      label:"Червень", orders:79, revenue:586800, aov:7428,
+      cats:[
+        {name:"Содоструйки",orders:32,qty:35,revenue:248200,color:"#10b981"},
+        {name:"Скалери",orders:4,qty:4,revenue:251000,color:"#3b82f6"},
+        {name:"Наконечники",orders:0,qty:0,revenue:0,color:"#8b5cf6"},
+        {name:"Насадки",orders:33,qty:247,revenue:61700,color:"#ef4444"},
+        {name:"Порошки",orders:8,qty:18,revenue:10700,color:"#f59e0b"},
+        {name:"Лампи",orders:2,qty:2,revenue:15200,color:"#06b6d4"},
+      ],
+      camps:[
+        {name:"Нак + Содо",spentUSD:747.43,reach:42341,clicks:1405,purchases:32,rev:248200},
+        {name:"Скалери",spentUSD:456.00,reach:53916,clicks:1027,purchases:4,rev:251000},
+        {name:"Насадки",spentUSD:895.67,reach:63216,clicks:1437,purchases:33,rev:61700},
+        {name:"Порошки",spentUSD:0,reach:0,clicks:0,purchases:0,rev:0},
+        {name:"Лампи",spentUSD:72.49,reach:10872,clicks:107,purchases:2,rev:15200},
+      ],
+      leads:{spentUSD:826.73,reach:65015,clicks:2087,results:38},
+      traffic:{spentUSD:89.54,reach:80216,clicks:1983},
+      cancelled:{orders:4,revenue:40200},
+    },
+  },
+  SOCO: {},
+  YouJoy: {},
+};
+
+/* ===== UI COMPONENTS ===== */
+function Th({children,align,sticky}){
+  const s={padding:"10px 10px",textAlign:align||"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.05em",whiteSpace:"nowrap"};
+  if(sticky)Object.assign(s,{position:"sticky",left:0,background:"#f8fafc",zIndex:2,borderRight:"1px solid #e2e8f0"});
+  return <th style={s}>{children}</th>;
+}
+function Td({children,bold,color,align}){
+  return <td style={{padding:"10px 10px",fontWeight:bold?700:400,color:color||"#1e293b",textAlign:align||"left",fontSize:12,whiteSpace:"nowrap"}}>{children}</td>;
+}
+function STd({children,bg}){
+  return <td style={{padding:"10px 10px",fontWeight:700,fontSize:12,whiteSpace:"nowrap",position:"sticky",left:0,background:bg||"#f8fafc",zIndex:1,borderRight:"1px solid #e2e8f0"}}>{children}</td>;
+}
+function Bar({pct,color}){
+  return <div style={{width:"100%",height:18,background:"#f1f5f9",borderRadius:5}}><div style={{width:`${Math.max(pct,2)}%`,height:"100%",background:color,borderRadius:5}}/></div>;
+}
+
+function Dashboard(){
+  const [project,setProject]=useState("VRN");
+  const [tab,setTab]=useState("products");
+  
+  const pData=DATA[project];
+  const months=Object.keys(pData);
+  const hasData=months.length>0;
+
+  return(
+    <div style={{fontFamily:"'Inter',sans-serif",background:"#fff",minHeight:"100vh",padding:"28px 20px",color:"#0f172a"}}>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+      <div style={{maxWidth:1060,margin:"0 auto"}}>
+
+        {/* PROJECT SELECTOR */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <h1 style={{fontSize:22,fontWeight:900,margin:0,letterSpacing:"-0.03em"}}>Дашборд продажів</h1>
+          <div style={{display:"flex",gap:4}}>
+            {["VRN","SOCO","YouJoy"].map(p=>(
+              <button key={p} onClick={()=>{setProject(p);setTab("products")}} style={{
+                padding:"6px 16px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",
+                border:project===p?"2px solid #0f172a":"1px solid #e2e8f0",
+                background:project===p?"#0f172a":"#fff",
+                color:project===p?"#fff":"#64748b",
+                fontFamily:"'Inter',sans-serif",
+              }}>{p}</button>
+            ))}
+          </div>
+        </div>
+
+        {!hasData&&<div style={{textAlign:"center",padding:60,color:"#94a3b8",fontSize:14}}>Даних по {project} ще немає. Скиньте продажі та кампанії — і я додам.</div>}
+
+        {hasData&&<>
+          <p style={{fontSize:12,color:"#94a3b8",margin:"0 0 14px"}}>Курс $1 = {USD} ₴ · Тільки роздріб · Оплачені замовлення</p>
+
+          {/* KPIs — all months side by side */}
+          <div style={{display:"grid",gridTemplateColumns:`repeat(${months.length},1fr)`,gap:10,marginBottom:6}}>
+            {months.map(m=>{const d=pData[m];return(
+              <div key={m} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:12,padding:"16px 14px"}}>
+                <div style={{fontSize:11,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",marginBottom:10}}>{d.label}</div>
+                <div style={{fontSize:26,fontWeight:800,letterSpacing:"-0.02em"}}>{fmt(d.revenue)} ₴</div>
+                <div style={{fontSize:12,color:"#64748b",marginTop:4}}>{d.orders} замовлень · AOV {fmt(d.aov)} ₴</div>
+              </div>
+            )})}
+          </div>
+
+          {/* TABS */}
+          <div style={{display:"flex",gap:5,margin:"18px 0 14px",flexWrap:"wrap"}}>
+            {[{id:"products",l:"По товарах"},{id:"campaigns",l:"Кампанії (покупки)"},{id:"leads",l:"Ліди"},{id:"traffic",l:"Трафік"},{id:"cancelled",l:"Анульовані"}].map(t=>(
+              <button key={t.id} onClick={()=>setTab(t.id)} style={{
+                padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif",
+                border:tab===t.id?"1px solid #3b82f6":"1px solid #e2e8f0",
+                background:tab===t.id?"#eff6ff":"#fff",color:tab===t.id?"#2563eb":"#64748b",
+              }}>{t.l}</button>
+            ))}
+          </div>
+
+          {/* PRODUCTS */}
+          {tab==="products"&&(
+            <div style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:14,overflow:"auto"}}>
+              <table style={{width:"100%",borderCollapse:"collapse",minWidth:700}}>
+                <thead><tr style={{borderBottom:"1px solid #e2e8f0"}}>
+                  <Th sticky>Категорія</Th>
+                  {months.map(m=><th key={m} colSpan={3} style={{textAlign:"center",padding:8,fontSize:11,fontWeight:700,color:"#334155",borderBottom:"2px solid #e2e8f0"}}>{pData[m].label}</th>)}
+                </tr><tr style={{borderBottom:"1px solid #e2e8f0"}}>
+                  <Th sticky></Th>
+                  {months.map(m=><>{<Th key={m+"o"} align="right">Зам</Th>}{<Th key={m+"q"} align="right">Шт</Th>}{<Th key={m+"r"} align="right">Виручка</Th>}</>)}
+                </tr></thead>
+                <tbody>
+                  {pData[months[0]].cats.map((c,i)=>(
+                    <tr key={c.name} style={{borderBottom:i<5?"1px solid #f1f5f9":"none"}}>
+                      <STd><span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:c.color,marginRight:8}}/>{c.name}</STd>
+                      {months.map(m=>{const mc=pData[m].cats[i];return<>
+                        <Td key={m+"o"} align="right">{mc.orders}</Td>
+                        <Td key={m+"q"} align="right">{mc.qty}</Td>
+                        <Td key={m+"r"} align="right" bold>{fmt(mc.revenue)} ₴</Td>
+                      </>})}
+                    </tr>
+                  ))}
+                  <tr style={{borderTop:"2px solid #e2e8f0",background:"#f1f5f9"}}>
+                    <STd bg="#f1f5f9">Всього</STd>
+                    {months.map(m=>{const d=pData[m];return<>
+                      <Td key={m+"o"} align="right" bold>{d.orders}</Td>
+                      <Td key={m+"q"} align="right" bold>{d.cats.reduce((s,c)=>s+c.qty,0)}</Td>
+                      <Td key={m+"r"} align="right" bold>{fmt(d.revenue)} ₴</Td>
+                    </>})}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* CAMPAIGNS (purchases) */}
+          {tab==="campaigns"&&(
+            <div>
+              <div style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:14,overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",minWidth:900}}>
+                  <thead><tr style={{borderBottom:"1px solid #e2e8f0"}}>
+                    <Th sticky>Кампанія</Th>
+                    {months.map(m=><th key={m} colSpan={5} style={{textAlign:"center",padding:8,fontSize:11,fontWeight:700,color:"#334155",borderBottom:"2px solid #e2e8f0"}}>{pData[m].label}</th>)}
+                  </tr><tr style={{borderBottom:"1px solid #e2e8f0"}}>
+                    <Th sticky></Th>
+                    {months.map(m=><>{<Th key={m+"s"} align="right">Витрати</Th>}{<Th key={m+"p"} align="right">Покупки</Th>}{<Th key={m+"r"} align="right">Виручка</Th>}{<Th key={m+"ro"} align="right">ROAS</Th>}{<Th key={m+"d"} align="right">ДРР</Th>}</>)}
+                  </tr></thead>
+                  <tbody>
+                    {pData[months[0]].camps.map((c,i)=>(
+                      <tr key={c.name} style={{borderBottom:i<4?"1px solid #f1f5f9":"none"}}>
+                        <STd>{c.name}</STd>
+                        {months.map(m=>{
+                          const mc=pData[m].camps[i];
+                          const sp=Math.round(mc.spentUSD*USD);
+                          const roas=mc.rev>0&&sp>0?mc.rev/sp:0;
+                          const drr=mc.rev>0&&sp>0?(sp/mc.rev)*100:0;
+                          if(!sp)return<>{<Td key={m+"s"} align="right" color="#94a3b8">—</Td>}{<Td key={m+"p"} align="center" color="#94a3b8">—</Td>}{<Td key={m+"r"} align="right" color="#94a3b8">—</Td>}{<Td key={m+"ro"} align="center" color="#94a3b8">—</Td>}{<Td key={m+"d"} align="center" color="#94a3b8">—</Td>}</>;
+                          return<>
+                            <Td key={m+"s"} align="right" bold>{fmt(sp)} ₴</Td>
+                            <Td key={m+"p"} align="center" bold>{mc.purchases}</Td>
+                            <Td key={m+"r"} align="right" bold>{fmt(mc.rev)} ₴</Td>
+                            <Td key={m+"ro"} align="center" bold color={roas>=5?"#059669":roas>=2?"#d97706":"#ef4444"}>{roas.toFixed(1)}x</Td>
+                            <Td key={m+"d"} align="center" color={drr<=20?"#059669":drr<=40?"#d97706":"#ef4444"}>{fmtPct(drr)}</Td>
+                          </>;
+                        })}
+                      </tr>
+                    ))}
+                    <tr style={{borderTop:"2px solid #e2e8f0",background:"#f1f5f9"}}>
+                      <STd bg="#f1f5f9">Всього</STd>
+                      {months.map(m=>{
+                        const cs=pData[m].camps;
+                        const tSp=Math.round(cs.reduce((s,c)=>s+c.spentUSD,0)*USD);
+                        const tPu=cs.reduce((s,c)=>s+c.purchases,0);
+                        const tRv=cs.reduce((s,c)=>s+c.rev,0);
+                        const tRoas=tRv>0&&tSp>0?tRv/tSp:0;
+                        const tDrr=tRv>0&&tSp>0?(tSp/tRv)*100:0;
+                        return<>
+                          <Td key={m+"s"} align="right" bold>{fmt(tSp)} ₴</Td>
+                          <Td key={m+"p"} align="center" bold>{tPu}</Td>
+                          <Td key={m+"r"} align="right" bold>{fmt(tRv)} ₴</Td>
+                          <Td key={m+"ro"} align="center" bold color="#059669">{tRoas.toFixed(1)}x</Td>
+                          <Td key={m+"d"} align="center" bold>{fmtPct(tDrr)}</Td>
+                        </>;
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style={{marginTop:8,fontSize:11,color:"#94a3b8"}}>* Витрати конвертовані з USD · Покупки та виручка — з файлу продажів</div>
+            </div>
+          )}
+
+          {/* LEADS */}
+          {tab==="leads"&&(
+            <div style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:14,overflow:"auto"}}>
+              <table style={{width:"100%",borderCollapse:"collapse"}}>
+                <thead><tr style={{borderBottom:"1px solid #e2e8f0"}}>
+                  <Th>Місяць</Th><Th align="right">Витрати</Th><Th align="right">Охоплення</Th><Th align="right">Кліки</Th><Th align="right">Ліди</Th><Th align="right">Ціна ліда</Th>
+                </tr></thead>
+                <tbody>
+                  {months.map((m,i)=>{
+                    const d=pData[m].leads;
+                    if(!d)return <tr key={m} style={{borderBottom:"1px solid #f1f5f9"}}><Td bold>{pData[m].label}</Td><Td align="center" color="#94a3b8" >—</Td><Td align="center" color="#94a3b8">—</Td><Td align="center" color="#94a3b8">—</Td><Td align="center" color="#94a3b8">—</Td><Td align="center" color="#94a3b8">—</Td></tr>;
+                    const sp=Math.round(d.spentUSD*USD);
+                    const cpl=d.results>0?Math.round(sp/d.results):0;
+                    return(
+                      <tr key={m} style={{borderBottom:i<months.length-1?"1px solid #f1f5f9":"none"}}>
+                        <Td bold>{pData[m].label}</Td>
+                        <Td align="right" bold>{fmt(sp)} ₴</Td>
+                        <Td align="right">{fmt(d.reach)}</Td>
+                        <Td align="right">{fmt(d.clicks)}</Td>
+                        <Td align="right" bold>{d.results}</Td>
+                        <Td align="right" bold color={cpl<1000?"#059669":"#d97706"}>{fmt(cpl)} ₴</Td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TRAFFIC */}
+          {tab==="traffic"&&(
+            <div style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:14,overflow:"auto"}}>
+              <table style={{width:"100%",borderCollapse:"collapse"}}>
+                <thead><tr style={{borderBottom:"1px solid #e2e8f0"}}>
+                  <Th>Місяць</Th><Th align="right">Витрати</Th><Th align="right">Охоплення</Th><Th align="right">Кліки</Th><Th align="right">CPC</Th>
+                </tr></thead>
+                <tbody>
+                  {months.map((m,i)=>{
+                    const d=pData[m].traffic;
+                    if(!d)return <tr key={m} style={{borderBottom:"1px solid #f1f5f9"}}><Td bold>{pData[m].label}</Td><Td align="center" color="#94a3b8">—</Td><Td align="center" color="#94a3b8">—</Td><Td align="center" color="#94a3b8">—</Td><Td align="center" color="#94a3b8">—</Td></tr>;
+                    const sp=Math.round(d.spentUSD*USD);
+                    const cpc=d.clicks>0?Math.round(sp/d.clicks):0;
+                    return(
+                      <tr key={m} style={{borderBottom:i<months.length-1?"1px solid #f1f5f9":"none"}}>
+                        <Td bold>{pData[m].label}</Td>
+                        <Td align="right" bold>{fmt(sp)} ₴</Td>
+                        <Td align="right">{fmt(d.reach)}</Td>
+                        <Td align="right">{fmt(d.clicks)}</Td>
+                        <Td align="right">{fmt(cpc)} ₴</Td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* CANCELLED */}
+          {tab==="cancelled"&&(
+            <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:14,overflow:"auto"}}>
+              <table style={{width:"100%",borderCollapse:"collapse"}}>
+                <thead><tr style={{borderBottom:"1px solid #fecaca"}}>
+                  <Th>Місяць</Th><Th align="right">Замовлень</Th><Th align="right">Сума</Th>
+                </tr></thead>
+                <tbody>
+                  {months.map((m,i)=>{
+                    const d=pData[m].cancelled;
+                    return(
+                      <tr key={m} style={{borderBottom:i<months.length-1?"1px solid #fecaca":"none"}}>
+                        <Td bold color="#dc2626">{pData[m].label}</Td>
+                        <Td align="right" bold color="#dc2626">{d.orders}</Td>
+                        <Td align="right" bold color="#dc2626">{fmt(d.revenue)} ₴</Td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>}
+      </div>
+    </div>
+  );
+}
+
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Dashboard />);
+  </script>
+</body>
+</html>
