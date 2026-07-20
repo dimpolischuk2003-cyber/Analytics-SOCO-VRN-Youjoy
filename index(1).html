@@ -1,0 +1,284 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Sales Dashboard</title><script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,sans-serif}button:hover{opacity:0.85}table{border-spacing:0}</style></head><body><div id="root"></div><script type="text/babel">const{useState}=React;
+
+const USD=44;
+const fmt=n=>n.toLocaleString("uk-UA");
+const fmtPct=n=>`${n.toFixed(1)}%`;
+const mColors={jun25:"#6366f1",jul25:"#8b5cf6",aug25:"#a78bfa",sep25:"#c084fc",oct25:"#e879f9",nov25:"#f472b6",dec25:"#fb7185",jan26:"#f87171",feb26:"#fb923c",mar26:"#fbbf24",apr26:"#3b82f6",may26:"#10b981",jun:"#f59e0b",jul:"#ef4444",apr:"#3b82f6",may:"#10b981"};
+
+const DATA={
+  VRN:{
+    apr:{label:"Квітень",orders:52,revenue:234229,aov:4504,
+      cats:[{name:"Содоструйки",orders:18,qty:21,revenue:129225,color:"#10b981"},{name:"Скалери",orders:2,qty:5,revenue:25480,color:"#3b82f6"},{name:"Наконечники",orders:7,qty:7,revenue:40977,color:"#8b5cf6"},{name:"Насадки",orders:19,qty:65,revenue:20427,color:"#ef4444"},{name:"Порошки",orders:5,qty:10,revenue:7120,color:"#f59e0b"},{name:"Лампи",orders:1,qty:1,revenue:11000,color:"#06b6d4"}],
+      camps:[{name:"Нак + Содо",spentUSD:1026.16,purchases:25,rev:170202},{name:"Скалери",spentUSD:95.46,purchases:2,rev:25480},{name:"Насадки",spentUSD:326.36,purchases:19,rev:20427},{name:"Порошки",spentUSD:146.54,purchases:5,rev:7120},{name:"Лампи",spentUSD:32.13,purchases:1,rev:11000}],
+      leads:null,traffic:null,cancelled:{orders:20,revenue:158130}},
+    may:{label:"Травень",orders:56,revenue:337575,aov:6028,
+      cats:[{name:"Содоструйки",orders:22,qty:30,revenue:206320,color:"#10b981"},{name:"Скалери",orders:2,qty:2,revenue:82225,color:"#3b82f6"},{name:"Наконечники",orders:3,qty:4,revenue:10040,color:"#8b5cf6"},{name:"Насадки",orders:20,qty:54,revenue:28940,color:"#ef4444"},{name:"Порошки",orders:9,qty:15,revenue:10050,color:"#f59e0b"},{name:"Лампи",orders:0,qty:0,revenue:0,color:"#06b6d4"}],
+      camps:[{name:"Нак + Содо",spentUSD:954.21,purchases:25,rev:216360},{name:"Скалери",spentUSD:568.09,purchases:2,rev:82225},{name:"Насадки",spentUSD:682.62,purchases:20,rev:28940},{name:"Порошки",spentUSD:494.96,purchases:9,rev:10050},{name:"Лампи",spentUSD:0,purchases:0,rev:0}],
+      leads:null,traffic:{spentUSD:31.09,reach:41230,clicks:653},cancelled:{orders:15,revenue:43070}},
+    jun:{label:"Червень",orders:79,revenue:586800,aov:7428,
+      cats:[{name:"Содоструйки",orders:32,qty:35,revenue:248200,color:"#10b981"},{name:"Скалери",orders:4,qty:4,revenue:251000,color:"#3b82f6"},{name:"Наконечники",orders:0,qty:0,revenue:0,color:"#8b5cf6"},{name:"Насадки",orders:33,qty:247,revenue:61700,color:"#ef4444"},{name:"Порошки",orders:8,qty:18,revenue:10700,color:"#f59e0b"},{name:"Лампи",orders:2,qty:2,revenue:15200,color:"#06b6d4"}],
+      camps:[{name:"Нак + Содо",spentUSD:747.43,purchases:32,rev:248200},{name:"Скалери",spentUSD:456.00,purchases:4,rev:251000},{name:"Насадки",spentUSD:895.67,purchases:33,rev:61700},{name:"Порошки",spentUSD:0,purchases:0,rev:0},{name:"Лампи",spentUSD:72.49,purchases:2,rev:15200}],
+      leads:{spentUSD:826.73,reach:65015,clicks:2087,results:38},traffic:{spentUSD:89.54,reach:80216,clicks:1983},cancelled:{orders:4,revenue:40200}},
+    jul:{label:"Липень 1-15 ⚡",orders:30,revenue:118364,aov:3945,partial:true,
+      cats:[{name:"Содоструйки",orders:10,qty:10,revenue:71009,color:"#10b981"},{name:"Скалери",orders:3,qty:3,revenue:24690,color:"#3b82f6"},{name:"Наконечники",orders:0,qty:0,revenue:0,color:"#8b5cf6"},{name:"Насадки",orders:10,qty:34,revenue:12465,color:"#ef4444"},{name:"Порошки",orders:4,qty:4,revenue:3600,color:"#f59e0b"},{name:"Лампи",orders:3,qty:3,revenue:6600,color:"#06b6d4"}],
+      camps:[],leads:null,traffic:null,cancelled:{orders:1,revenue:500}},
+  },
+  SOCO:{
+    jun25:{label:"Чер 25",orders:303,revenue:2864255,aov:9453,cats:[{name:"Мікроскопи",orders:0,qty:0,revenue:0,color:"#dc2626"},{name:"Файли",orders:191,qty:1945,revenue:1036174.0,color:"#10b981"},{name:"Обтурація",orders:34,qty:119,revenue:206336.0,color:"#f59e0b"},{name:"Ендомотори",orders:6,qty:6,revenue:171879.0,color:"#3b82f6"},{name:"Наконечники",orders:37,qty:68,revenue:418321.25,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:4,qty:5,revenue:381700.0,color:"#06b6d4"},{name:"Сканери",orders:1,qty:1,revenue:179000.0,color:"#a855f7"},{name:"Скалери",orders:3,qty:3,revenue:165800.0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:2,qty:2,revenue:168000.0,color:"#ec4899"},{name:"Піскоструй",orders:6,qty:6,revenue:63850.0,color:"#64748b"},{name:"Бори",orders:1,qty:16,revenue:2400.0,color:"#78716c"},{name:"Лампи",orders:0,qty:0,revenue:0,color:"#eab308"},{name:"Порошки",orders:6,qty:12,revenue:17150.0,color:"#84cc16"},{name:"Інше",orders:12,qty:104,revenue:53645.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    jul25:{label:"Лип 25",orders:354,revenue:4496594,aov:12702,cats:[{name:"Мікроскопи",orders:2,qty:2,revenue:1082174.0,color:"#dc2626"},{name:"Файли",orders:195,qty:2022,revenue:1055146.5,color:"#10b981"},{name:"Обтурація",orders:53,qty:197,revenue:378851.0,color:"#f59e0b"},{name:"Ендомотори",orders:6,qty:6,revenue:175510.0,color:"#3b82f6"},{name:"Наконечники",orders:51,qty:80,revenue:492162.5,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:3,qty:3,revenue:173200.0,color:"#06b6d4"},{name:"Сканери",orders:2,qty:2,revenue:417900.0,color:"#a855f7"},{name:"Скалери",orders:3,qty:3,revenue:177750.0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:2,qty:2,revenue:174000.0,color:"#ec4899"},{name:"Піскоструй",orders:14,qty:15,revenue:89250.0,color:"#64748b"},{name:"Бори",orders:1,qty:4,revenue:2400.0,color:"#78716c"},{name:"Лампи",orders:3,qty:3,revenue:28950.0,color:"#eab308"},{name:"Порошки",orders:5,qty:11,revenue:10000.0,color:"#84cc16"},{name:"Інше",orders:14,qty:71,revenue:239300.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    aug25:{label:"Сер 25",orders:334,revenue:2593727,aov:7766,cats:[{name:"Мікроскопи",orders:0,qty:0,revenue:0,color:"#dc2626"},{name:"Файли",orders:196,qty:2084,revenue:1154560.0,color:"#10b981"},{name:"Обтурація",orders:53,qty:199,revenue:381782.0,color:"#f59e0b"},{name:"Ендомотори",orders:4,qty:4,revenue:150785.0,color:"#3b82f6"},{name:"Наконечники",orders:37,qty:60,revenue:345660.0,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:2,qty:2,revenue:127400.0,color:"#06b6d4"},{name:"Сканери",orders:1,qty:1,revenue:179000.0,color:"#a855f7"},{name:"Скалери",orders:2,qty:2,revenue:60060.0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:0,qty:0,revenue:0,color:"#ec4899"},{name:"Піскоструй",orders:15,qty:15,revenue:107110.0,color:"#64748b"},{name:"Бори",orders:1,qty:12,revenue:1800.0,color:"#78716c"},{name:"Лампи",orders:3,qty:3,revenue:21960.0,color:"#eab308"},{name:"Порошки",orders:1,qty:2,revenue:1800.0,color:"#84cc16"},{name:"Інше",orders:19,qty:89,revenue:61810.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    sep25:{label:"Вер 25",orders:327,revenue:4351976,aov:13309,cats:[{name:"Мікроскопи",orders:2,qty:2,revenue:991080.0,color:"#dc2626"},{name:"Файли",orders:194,qty:2191,revenue:1224280.0,color:"#10b981"},{name:"Обтурація",orders:43,qty:134,revenue:259750.0,color:"#f59e0b"},{name:"Ендомотори",orders:7,qty:8,revenue:423204.0,color:"#3b82f6"},{name:"Наконечники",orders:36,qty:58,revenue:371224.0,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:6,qty:6,revenue:418540.0,color:"#06b6d4"},{name:"Сканери",orders:0,qty:0,revenue:0,color:"#a855f7"},{name:"Скалери",orders:4,qty:4,revenue:185118.5,color:"#14b8a6"},{name:"П\'єзохірургія",orders:1,qty:1,revenue:84000.0,color:"#ec4899"},{name:"Піскоструй",orders:6,qty:6,revenue:48500.0,color:"#64748b"},{name:"Бори",orders:5,qty:46,revenue:15750.0,color:"#78716c"},{name:"Лампи",orders:1,qty:9,revenue:57200.0,color:"#eab308"},{name:"Порошки",orders:3,qty:7,revenue:5400.0,color:"#84cc16"},{name:"Інше",orders:19,qty:50,revenue:267930.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    oct25:{label:"Жов 25",orders:337,revenue:3348874,aov:9937,cats:[{name:"Мікроскопи",orders:0,qty:0,revenue:0,color:"#dc2626"},{name:"Файли",orders:202,qty:2090,revenue:1101381.0,color:"#10b981"},{name:"Обтурація",orders:57,qty:196,revenue:392495.0,color:"#f59e0b"},{name:"Ендомотори",orders:6,qty:7,revenue:255800.0,color:"#3b82f6"},{name:"Наконечники",orders:29,qty:36,revenue:225833.0,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:5,qty:5,revenue:337950.0,color:"#06b6d4"},{name:"Сканери",orders:2,qty:2,revenue:358000.0,color:"#a855f7"},{name:"Скалери",orders:4,qty:5,revenue:341535.0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:1,qty:1,revenue:84000.0,color:"#ec4899"},{name:"Піскоструй",orders:3,qty:3,revenue:17850.0,color:"#64748b"},{name:"Бори",orders:5,qty:27,revenue:5400.0,color:"#78716c"},{name:"Лампи",orders:2,qty:2,revenue:64500.0,color:"#eab308"},{name:"Порошки",orders:7,qty:20,revenue:15620.0,color:"#84cc16"},{name:"Інше",orders:14,qty:50,revenue:148510.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    nov25:{label:"Лис 25",orders:340,revenue:3897723,aov:11464,cats:[{name:"Мікроскопи",orders:1,qty:1,revenue:390600.0,color:"#dc2626"},{name:"Файли",orders:209,qty:2048,revenue:1138679.0,color:"#10b981"},{name:"Обтурація",orders:42,qty:216,revenue:443928.5,color:"#f59e0b"},{name:"Ендомотори",orders:10,qty:10,revenue:342235.0,color:"#3b82f6"},{name:"Наконечники",orders:39,qty:56,revenue:371998.0,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:5,qty:5,revenue:346300.0,color:"#06b6d4"},{name:"Сканери",orders:2,qty:2,revenue:358000.0,color:"#a855f7"},{name:"Скалери",orders:3,qty:3,revenue:252070.0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:0,qty:0,revenue:0,color:"#ec4899"},{name:"Піскоструй",orders:4,qty:4,revenue:28578.5,color:"#64748b"},{name:"Бори",orders:6,qty:57,revenue:26474.0,color:"#78716c"},{name:"Лампи",orders:0,qty:0,revenue:0,color:"#eab308"},{name:"Порошки",orders:2,qty:4,revenue:2450.0,color:"#84cc16"},{name:"Інше",orders:17,qty:80,revenue:196410.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    dec25:{label:"Гру 25",orders:308,revenue:4864619,aov:15794,cats:[{name:"Мікроскопи",orders:3,qty:3,revenue:1693600.0,color:"#dc2626"},{name:"Файли",orders:182,qty:2131,revenue:1130295.0,color:"#10b981"},{name:"Обтурація",orders:39,qty:139,revenue:227832.0,color:"#f59e0b"},{name:"Ендомотори",orders:6,qty:6,revenue:163025.0,color:"#3b82f6"},{name:"Наконечники",orders:33,qty:47,revenue:259632.0,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:7,qty:7,revenue:485850.0,color:"#06b6d4"},{name:"Сканери",orders:1,qty:1,revenue:179000.0,color:"#a855f7"},{name:"Скалери",orders:4,qty:5,revenue:251300.0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:2,qty:2,revenue:288805.0,color:"#ec4899"},{name:"Піскоструй",orders:5,qty:5,revenue:29750.0,color:"#64748b"},{name:"Бори",orders:3,qty:20,revenue:7650.0,color:"#78716c"},{name:"Лампи",orders:5,qty:5,revenue:47620.0,color:"#eab308"},{name:"Порошки",orders:5,qty:28,revenue:23350.0,color:"#84cc16"},{name:"Інше",orders:13,qty:45,revenue:76910.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    jan26:{label:"Січ 26",orders:302,revenue:6199422,aov:20528,cats:[{name:"Мікроскопи",orders:7,qty:7,revenue:3395940.0,color:"#dc2626"},{name:"Файли",orders:171,qty:1875,revenue:1045597.5,color:"#10b981"},{name:"Обтурація",orders:47,qty:210,revenue:420118.5,color:"#f59e0b"},{name:"Ендомотори",orders:3,qty:3,revenue:110680.0,color:"#3b82f6"},{name:"Наконечники",orders:33,qty:68,revenue:273289.0,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:5,qty:5,revenue:307100.0,color:"#06b6d4"},{name:"Сканери",orders:1,qty:1,revenue:161100.0,color:"#a855f7"},{name:"Скалери",orders:0,qty:0,revenue:0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:1,qty:1,revenue:84000.0,color:"#ec4899"},{name:"Піскоструй",orders:4,qty:4,revenue:24546.5,color:"#64748b"},{name:"Бори",orders:4,qty:40,revenue:6300.0,color:"#78716c"},{name:"Лампи",orders:2,qty:2,revenue:30150.0,color:"#eab308"},{name:"Порошки",orders:2,qty:9,revenue:5000.0,color:"#84cc16"},{name:"Інше",orders:22,qty:37,revenue:335600.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    feb26:{label:"Лют 26",orders:309,revenue:4178876,aov:13524,cats:[{name:"Мікроскопи",orders:3,qty:3,revenue:1282500.0,color:"#dc2626"},{name:"Файли",orders:180,qty:1945,revenue:1047783.5,color:"#10b981"},{name:"Обтурація",orders:50,qty:148,revenue:408210.0,color:"#f59e0b"},{name:"Ендомотори",orders:4,qty:4,revenue:229831.0,color:"#3b82f6"},{name:"Наконечники",orders:38,qty:45,revenue:276782.0,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:6,qty:6,revenue:396600.0,color:"#06b6d4"},{name:"Сканери",orders:1,qty:1,revenue:179000.0,color:"#a855f7"},{name:"Скалери",orders:3,qty:9,revenue:91400.0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:1,qty:1,revenue:89000.0,color:"#ec4899"},{name:"Піскоструй",orders:2,qty:2,revenue:14600.0,color:"#64748b"},{name:"Бори",orders:1,qty:1,revenue:600.0,color:"#78716c"},{name:"Лампи",orders:1,qty:1,revenue:2700.0,color:"#eab308"},{name:"Порошки",orders:1,qty:10,revenue:10000.0,color:"#84cc16"},{name:"Інше",orders:18,qty:107,revenue:149870.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    mar26:{label:"Бер 26",orders:365,revenue:3965023,aov:10863,cats:[{name:"Мікроскопи",orders:0,qty:0,revenue:0,color:"#dc2626"},{name:"Файли",orders:220,qty:2356,revenue:1308611.0,color:"#10b981"},{name:"Обтурація",orders:54,qty:242,revenue:521875.0,color:"#f59e0b"},{name:"Ендомотори",orders:10,qty:10,revenue:288760.0,color:"#3b82f6"},{name:"Наконечники",orders:42,qty:72,revenue:369803.5,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:6,qty:6,revenue:430200.0,color:"#06b6d4"},{name:"Сканери",orders:2,qty:2,revenue:358000.0,color:"#a855f7"},{name:"Скалери",orders:3,qty:3,revenue:244500.0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:1,qty:1,revenue:144500.0,color:"#ec4899"},{name:"Піскоструй",orders:5,qty:5,revenue:43793.5,color:"#64748b"},{name:"Бори",orders:2,qty:11,revenue:1650.0,color:"#78716c"},{name:"Лампи",orders:0,qty:0,revenue:0,color:"#eab308"},{name:"Порошки",orders:5,qty:11,revenue:7800.0,color:"#84cc16"},{name:"Інше",orders:15,qty:72,revenue:245530.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    apr26:{label:"Кві 26",orders:322,revenue:4495414,aov:13961,cats:[{name:"Мікроскопи",orders:3,qty:3,revenue:1528441.0,color:"#dc2626"},{name:"Файли",orders:200,qty:2024,revenue:1077342.5,color:"#10b981"},{name:"Обтурація",orders:48,qty:191,revenue:312343.0,color:"#f59e0b"},{name:"Ендомотори",orders:3,qty:3,revenue:80630.0,color:"#3b82f6"},{name:"Наконечники",orders:26,qty:40,revenue:351028.0,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:3,qty:3,revenue:193300.0,color:"#06b6d4"},{name:"Сканери",orders:2,qty:2,revenue:396000.0,color:"#a855f7"},{name:"Скалери",orders:2,qty:2,revenue:163600.0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:1,qty:1,revenue:93200.0,color:"#ec4899"},{name:"Піскоструй",orders:8,qty:10,revenue:85030.0,color:"#64748b"},{name:"Бори",orders:5,qty:25,revenue:10050.0,color:"#78716c"},{name:"Лампи",orders:0,qty:0,revenue:0,color:"#eab308"},{name:"Порошки",orders:4,qty:7,revenue:4250.0,color:"#84cc16"},{name:"Інше",orders:17,qty:108,revenue:200200.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    may26:{label:"Тра 26",orders:331,revenue:3700302,aov:11179,cats:[{name:"Мікроскопи",orders:2,qty:2,revenue:834500.0,color:"#dc2626"},{name:"Файли",orders:184,qty:2154,revenue:1136790.0,color:"#10b981"},{name:"Обтурація",orders:52,qty:213,revenue:487311.5,color:"#f59e0b"},{name:"Ендомотори",orders:5,qty:5,revenue:133760.0,color:"#3b82f6"},{name:"Наконечники",orders:39,qty:63,revenue:304984.0,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:2,qty:2,revenue:112750.0,color:"#06b6d4"},{name:"Сканери",orders:1,qty:1,revenue:179000.0,color:"#a855f7"},{name:"Скалери",orders:0,qty:0,revenue:0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:0,qty:0,revenue:0,color:"#ec4899"},{name:"Піскоструй",orders:10,qty:10,revenue:318582.0,color:"#64748b"},{name:"Бори",orders:5,qty:13,revenue:5550.0,color:"#78716c"},{name:"Лампи",orders:1,qty:1,revenue:13450.0,color:"#eab308"},{name:"Порошки",orders:4,qty:7,revenue:5100.0,color:"#84cc16"},{name:"Інше",orders:26,qty:216,revenue:168525.0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    jun:{label:"Червень",orders:319,revenue:4038111.5,aov:12659,
+      cats:[{name:"Мікроскопи",orders:2,qty:2,revenue:1050000,color:"#dc2626"},{name:"Файли",orders:188,qty:3235,revenue:1619703.5,color:"#10b981"},{name:"Обтурація",orders:42,qty:468,revenue:176811,color:"#f59e0b"},{name:"Ендомотори",orders:14,qty:35,revenue:325822,color:"#3b82f6"},{name:"Наконечники",orders:37,qty:62,revenue:259878,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:5,qty:14,revenue:218508,color:"#06b6d4"},{name:"Сканери",orders:0,qty:0,revenue:0,color:"#a855f7"},{name:"Скалери",orders:2,qty:2,revenue:162000,color:"#14b8a6"},{name:"П\'єзохірургія",orders:1,qty:5,revenue:95000,color:"#ec4899"},{name:"Піскоструй",orders:6,qty:12,revenue:42950,color:"#64748b"},{name:"Бори",orders:12,qty:227,revenue:61880,color:"#78716c"},{name:"Лампи",orders:2,qty:4,revenue:8709,color:"#eab308"},{name:"Порошки",orders:7,qty:23,revenue:16050,color:"#84cc16"},{name:"Інше",orders:1,qty:1,revenue:800,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+    jul:{label:"Липень 1-15 ⚡",orders:151,revenue:1125456,aov:7453,partial:true,
+      cats:[{name:"Мікроскопи",orders:0,qty:0,revenue:0,color:"#dc2626"},{name:"Файли",orders:91,qty:1421,revenue:622260,color:"#10b981"},{name:"Обтурація",orders:21,qty:198,revenue:51670,color:"#f59e0b"},{name:"Ендомотори",orders:8,qty:17,revenue:128966,color:"#3b82f6"},{name:"Наконечники",orders:21,qty:51,revenue:138585,color:"#8b5cf6"},{name:"Фізіодіспенсер",orders:2,qty:3,revenue:133975,color:"#06b6d4"},{name:"Сканери",orders:0,qty:0,revenue:0,color:"#a855f7"},{name:"Скалери",orders:0,qty:0,revenue:0,color:"#14b8a6"},{name:"П\'єзохірургія",orders:0,qty:0,revenue:0,color:"#ec4899"},{name:"Піскоструй",orders:3,qty:21,revenue:28430,color:"#64748b"},{name:"Бори",orders:4,qty:36,revenue:7350,color:"#78716c"},{name:"Лампи",orders:1,qty:6,revenue:14220,color:"#eab308"},{name:"Порошки",orders:0,qty:0,revenue:0,color:"#84cc16"},{name:"Інше",orders:0,qty:0,revenue:0,color:"#94a3b8"}],camps:[],leads:null,traffic:null,cancelled:{orders:0,revenue:0}},
+  },
+  YouJoy:{
+    jun:{label:"Червень",orders:4,revenue:685900,aov:171475,
+      cats:[{name:"Сканери",orders:3,qty:3,revenue:610000,color:"#8b5cf6"},{name:"Рентген",orders:1,qty:1,revenue:75900,color:"#f59e0b"}],
+      camps:[],leads:{spentUSD:557.63,reach:31267,clicks:503,results:20},traffic:null,cancelled:{orders:0,revenue:0}},
+    jul:{label:"Липень 1-15 ⚡",orders:1,revenue:34900,aov:34900,partial:true,
+      cats:[{name:"Рентген",orders:1,qty:1,revenue:34900,color:"#f59e0b"}],
+      camps:[],leads:null,traffic:null,cancelled:{orders:1,revenue:179000}},
+  },
+};
+
+function MonthBadge({label,color}){return <div style={{display:"inline-block",background:color+"15",color,border:`1px solid ${color}35`,borderRadius:6,padding:"3px 10px",fontSize:10,fontWeight:700,letterSpacing:"0.04em",textTransform:"uppercase"}}>{label}</div>;}
+function SectionLabel({children}){return <div style={{fontSize:14,fontWeight:800,color:"#0f172a",margin:"28px 0 12px",paddingBottom:8,borderBottom:"2px solid #e2e8f0"}}>{children}</div>;}
+function Th({children,align,sticky,bg}){const s={padding:"9px 10px",textAlign:align||"left",fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.04em",whiteSpace:"nowrap",background:bg||"transparent"};if(sticky)Object.assign(s,{position:"sticky",left:0,background:bg||"#fff",zIndex:2,borderRight:"2px solid #e2e8f0"});return <th style={s}>{children}</th>;}
+function Td({children,bold,color,align,bg,br}){return <td style={{padding:"9px 10px",fontWeight:bold?700:400,color:color||"#1e293b",textAlign:align||"left",fontSize:12,whiteSpace:"nowrap",background:bg||"transparent",borderRight:br?"3px solid #e2e8f0":"none"}}>{children}</td>;}
+function STd({children,bg}){return <td style={{padding:"9px 10px",fontWeight:700,fontSize:12,whiteSpace:"nowrap",position:"sticky",left:0,background:bg||"#fff",zIndex:1,borderRight:"2px solid #e2e8f0"}}>{children}</td>;}
+function Dash({bg,br}){return <Td align="center" color="#cbd5e1" bg={bg} br={br}>—</Td>;}
+function RoasCell({val}){if(!val)return <Td align="center" color="#cbd5e1">—</Td>;const c=val>=5?"#059669":val>=2?"#d97706":"#ef4444";return <Td align="center" bold color={c}>{val.toFixed(1)}x</Td>;}
+function DrrCell({val,bg,br}){if(val===null||val===undefined)return <Td align="center" color="#cbd5e1" bg={bg} br={br}>—</Td>;const c=val<=20?"#059669":val<=40?"#d97706":"#ef4444";return <Td align="center" color={c} bg={bg} br={br}>{fmtPct(val)}</Td>;}
+
+function CompareBlock({data}){
+  if(!data)return null;
+  const d=data;
+  const jun26noMicro=d.jun26.retail-d.jun26.microRet;
+  const may26noMicro=d.may26.retail-d.may26.microRet;
+  const vsJun25=((d.jun26.retail-d.jun25.retail)/d.jun25.retail*100);
+  const vsMay26=((d.jun26.retail-d.may26.retail)/d.may26.retail*100);
+  const vsJun25noM=((jun26noMicro-d.jun25.retail)/d.jun25.retail*100);
+  const vsMay26noM=((jun26noMicro-may26noMicro)/may26noMicro*100);
+  const items=[
+    {label:"Червень 2025 (роздріб)",val:d.jun25.retail},
+    {label:"Травень 2026 (роздріб)",val:d.may26.retail},
+    {label:"Червень 2026 (роздріб)",val:d.jun26.retail,bold:true},
+    {label:"Червень 2026 без мікроскопів",val:jun26noMicro},
+  ];
+  return(
+    <div style={{marginTop:16,background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:12,padding:"16px 18px"}}>
+      <div style={{fontSize:12,fontWeight:700,color:"#0369a1",textTransform:"uppercase",letterSpacing:"0.04em",marginBottom:12}}>📊 Порівняння по місяцях (роздріб)</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+        {items.map(i=>(
+          <div key={i.label} style={{background:"#fff",border:"1px solid #e0f2fe",borderRadius:8,padding:"10px 12px",textAlign:"center"}}>
+            <div style={{fontSize:10,color:"#64748b",marginBottom:4}}>{i.label}</div>
+            <div style={{fontSize:i.bold?20:16,fontWeight:800,color:i.bold?"#0369a1":"#1e293b"}}>{fmt(i.val)} ₴</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginTop:10}}>
+        <div style={{background:"#fff",border:"1px solid #e0f2fe",borderRadius:8,padding:"8px",textAlign:"center"}}>
+          <div style={{fontSize:10,color:"#64748b"}}>vs Червень 2025</div>
+          <div style={{fontSize:16,fontWeight:800,color:vsJun25>0?"#059669":"#ef4444"}}>{vsJun25>0?"+":""}{vsJun25.toFixed(1)}%</div>
+        </div>
+        <div style={{background:"#fff",border:"1px solid #e0f2fe",borderRadius:8,padding:"8px",textAlign:"center"}}>
+          <div style={{fontSize:10,color:"#64748b"}}>vs Травень 2026</div>
+          <div style={{fontSize:16,fontWeight:800,color:vsMay26>0?"#059669":"#ef4444"}}>{vsMay26>0?"+":""}{vsMay26.toFixed(1)}%</div>
+        </div>
+        <div style={{background:"#fff",border:"1px solid #e0f2fe",borderRadius:8,padding:"8px",textAlign:"center"}}>
+          <div style={{fontSize:10,color:"#64748b"}}>vs Чер 2025 (без мікро)</div>
+          <div style={{fontSize:16,fontWeight:800,color:vsJun25noM>0?"#059669":"#ef4444"}}>{vsJun25noM>0?"+":""}{vsJun25noM.toFixed(1)}%</div>
+        </div>
+        <div style={{background:"#fff",border:"1px solid #e0f2fe",borderRadius:8,padding:"8px",textAlign:"center"}}>
+          <div style={{fontSize:10,color:"#64748b"}}>vs Трав 2026 (без мікро)</div>
+          <div style={{fontSize:16,fontWeight:800,color:vsMay26noM>0?"#059669":"#ef4444"}}>{vsMay26noM>0?"+":""}{vsMay26noM.toFixed(1)}%</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Dashboard(){
+  const [project,setProject]=useState("VRN");
+  const [tab,setTab]=useState("products");
+  const [selMonths,setSelMonths]=useState(null); // null = all
+  const pData=DATA[project];const allMonths=Object.keys(pData);const hasData=allMonths.length>0;
+  const months=selMonths?allMonths.filter(m=>selMonths.includes(m)):allMonths;
+  const hasCamps=hasData&&months.some(m=>pData[m].camps&&pData[m].camps.length>0);
+  const monthAdSpend={};
+  if(hasData)allMonths.forEach(m=>{const d=pData[m];let t=d.camps?d.camps.reduce((s,c)=>s+c.spentUSD,0):0;if(d.leads)t+=d.leads.spentUSD;if(d.traffic)t+=d.traffic.spentUSD;monthAdSpend[m]=Math.round(t*USD);});
+
+  const toggleMonth=(m)=>{
+    if(!selMonths){setSelMonths([m]);return;}
+    if(selMonths.includes(m)){
+      const next=selMonths.filter(x=>x!==m);
+      setSelMonths(next.length?next:null);
+    } else {
+      const next=[...selMonths,m].sort((a,b)=>allMonths.indexOf(a)-allMonths.indexOf(b));
+      if(next.length===allMonths.length)setSelMonths(null);
+      else setSelMonths(next);
+    }
+  };
+
+  return(
+    <div style={{fontFamily:"'Inter',sans-serif",background:"#fff",minHeight:"100vh",padding:"28px 20px",color:"#0f172a"}}>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+      <div style={{maxWidth:1100,margin:"0 auto"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+          <div><h1 style={{fontSize:22,fontWeight:900,margin:0,letterSpacing:"-0.03em"}}>Дашборд продажів</h1><p style={{fontSize:12,color:"#94a3b8",margin:"4px 0 0"}}>Курс $1 = {USD} ₴ · Роздріб · Оплачені</p></div>
+          <div style={{display:"flex",gap:4}}>
+            {["VRN","SOCO","YouJoy"].map(p=>(
+              <button key={p} onClick={()=>{setProject(p);setTab("products");setSelMonths(null)}} style={{padding:"8px 20px",borderRadius:10,fontSize:14,fontWeight:800,cursor:"pointer",border:project===p?"none":"1px solid #e2e8f0",background:project===p?"#0f172a":"#fff",color:project===p?"#fff":"#94a3b8",fontFamily:"'Inter',sans-serif"}}>{p}</button>
+            ))}
+          </div>
+        </div>
+        {!hasData&&<div style={{textAlign:"center",padding:80,color:"#94a3b8",fontSize:15,background:"#f8fafc",borderRadius:16}}>Даних по {project} ще немає.</div>}
+        {hasData&&<>
+          <div style={{display:"grid",gridTemplateColumns:`repeat(${months.length},1fr)`,gap:10,marginBottom:20}}>
+            {months.map(m=>{const d=pData[m];const mc=mColors[m];return(
+              <div key={m} style={{background:"#fff",border:`2px solid ${mc}30`,borderRadius:14,padding:"18px 16px",borderTop:`4px solid ${mc}`}}>
+                <MonthBadge label={d.label} color={mc}/>
+                <div style={{fontSize:28,fontWeight:900,letterSpacing:"-0.03em",marginTop:10}}>{fmt(d.revenue)} ₴</div>
+                <div style={{display:"flex",gap:16,marginTop:8}}>
+                  <div style={{fontSize:12,color:"#64748b"}}><strong style={{color:"#1e293b"}}>{d.orders}</strong> замовлень</div>
+                  <div style={{fontSize:12,color:"#64748b"}}>AOV <strong style={{color:"#1e293b"}}>{fmt(d.aov)} ₴</strong></div>
+                </div>
+              </div>
+            )})}
+          </div>
+          {/* MONTH SELECTOR */}
+          <div style={{display:"flex",gap:4,alignItems:"center",marginBottom:14}}>
+            <span style={{fontSize:11,color:"#94a3b8",fontWeight:600,marginRight:6}}>Місяці:</span>
+            <button onClick={()=>setSelMonths(null)} style={{padding:"5px 12px",borderRadius:7,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"'Inter',sans-serif",border:!selMonths?"2px solid #0f172a":"1px solid #e2e8f0",background:!selMonths?"#0f172a":"#fff",color:!selMonths?"#fff":"#94a3b8"}}>Всі</button>
+            {allMonths.map(m=>{const mc=mColors[m];const active=!selMonths||selMonths.includes(m);return(
+              <button key={m} onClick={()=>toggleMonth(m)} style={{padding:"5px 12px",borderRadius:7,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"'Inter',sans-serif",border:active?`2px solid ${mc}`:"1px solid #e2e8f0",background:active?mc+"15":"#fff",color:active?mc:"#cbd5e1",transition:"all 0.15s"}}>{pData[m].label}</button>
+            )})}
+          </div>
+          <div style={{display:"flex",gap:4,marginBottom:16}}>
+            {[{id:"products",l:"📦 Товари"},{id:"ads",l:"📊 Реклама"}].map(t=>(
+              <button key={t.id} onClick={()=>setTab(t.id)} style={{padding:"10px 20px",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Inter',sans-serif",border:"none",background:tab===t.id?"#0f172a":"#f1f5f9",color:tab===t.id?"#fff":"#64748b"}}>{t.l}</button>
+            ))}
+          </div>
+
+          {tab==="products"&&(
+            <div>
+              <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:14,overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead>
+                    <tr><Th sticky bg="#fff"></Th>{months.map(m=>{const mc=mColors[m];return <th key={m} colSpan={4} style={{textAlign:"center",padding:"10px 0 6px",borderBottom:`3px solid ${mc}`,background:`${mc}08`}}><MonthBadge label={pData[m].label} color={mc}/></th>})}</tr>
+                    <tr style={{borderBottom:"1px solid #e2e8f0"}}><Th sticky bg="#fff">Категорія</Th>{months.map((m,mi)=>{const bg=mColors[m]+"06";return<><Th key={m+"o"} align="right" bg={bg}>Зам</Th><Th key={m+"q"} align="right" bg={bg}>Шт</Th><Th key={m+"r"} align="right" bg={bg}>Виручка</Th><Th key={m+"d"} align="right" bg={bg}>ДРР</Th></>})}</tr>
+                  </thead>
+                  <tbody>
+                    {(pData[months[0]].cats||[]).map((c,i)=>(
+                      <tr key={c.name} style={{borderBottom:"1px solid #f1f5f9"}}>
+                        <STd><span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:c.color,marginRight:8}}/>{c.name}</STd>
+                        {months.map((m,mi)=>{const mc=pData[m].cats?.[i];if(!mc)return<><Dash/><Dash/><Dash/><Dash br={mi<months.length-1}/></>;const bg=mColors[m]+"06";
+                          const camp=pData[m].camps?pData[m].camps.find(cp=>cp.name===c.name||(c.name==="Содоструйки"&&cp.name==="Нак + Содо")||(c.name==="Наконечники"&&cp.name==="Нак + Содо")):null;
+                          let spend=camp&&c.name!=="Наконечники"?Math.round(camp.spentUSD*USD):null;
+                          const drr=spend&&mc.revenue>0?(spend/mc.revenue)*100:null;
+                          return<><Td key={m+"o"} align="right" bg={bg}>{mc.orders||"—"}</Td><Td key={m+"q"} align="right" bg={bg}>{mc.qty||"—"}</Td><Td key={m+"r"} align="right" bold bg={bg}>{mc.revenue?`${fmt(mc.revenue)} ₴`:"—"}</Td><DrrCell key={m+"d"} val={drr} bg={bg} br={mi<months.length-1}/></>;
+                        })}
+                      </tr>
+                    ))}
+                    <tr style={{borderTop:"2px solid #334155",background:"#f8fafc"}}>
+                      <STd bg="#f8fafc"><strong>Всього</strong></STd>
+                      {months.map((m,mi)=>{const d=pData[m];const tS=monthAdSpend[m];const tD=d.revenue>0?(tS/d.revenue)*100:0;return<>
+                        <Td key={m+"o"} align="right" bold bg="#f8fafc">{d.orders}</Td><Td key={m+"q"} align="right" bold bg="#f8fafc">{(d.cats||[]).reduce((s,c)=>s+c.qty,0)}</Td>
+                        <Td key={m+"r"} align="right" bold bg="#f8fafc">{fmt(d.revenue)} ₴</Td><Td key={m+"d"} align="center" bold bg="#f8fafc" br={mi<months.length-1}>{fmtPct(tD)}</Td>
+                      </>})}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              {/* Compare block for SOCO */}
+              {pData[months[0]]?.compare&&<CompareBlock data={pData[months[0]].compare}/>}
+              {/* Cancelled */}
+              {months.some(m=>pData[m].cancelled&&pData[m].cancelled.orders>0)&&(
+                <div style={{marginTop:16,background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"14px 18px"}}>
+                  <div style={{fontSize:11,fontWeight:700,color:"#b91c1c",textTransform:"uppercase",letterSpacing:"0.04em",marginBottom:10}}>Анульовані замовлення</div>
+                  <div style={{display:"flex",gap:12}}>{months.map(m=>{const d=pData[m].cancelled;if(!d||!d.orders)return null;return(
+                    <div key={m} style={{flex:1,background:"#fff",border:"1px solid #fecaca",borderRadius:8,padding:"10px 12px",textAlign:"center"}}>
+                      <div style={{fontSize:10,color:"#94a3b8",marginBottom:4}}>{pData[m].label}</div>
+                      <div style={{fontSize:18,fontWeight:800,color:"#dc2626"}}>{d.orders} <span style={{fontSize:12,fontWeight:500}}>зам</span></div>
+                      <div style={{fontSize:12,color:"#ef4444",marginTop:2}}>{fmt(d.revenue)} ₴</div>
+                    </div>
+                  )})}</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab==="ads"&&(
+            <div>
+              {hasCamps&&<><SectionLabel>🛒 Кампанії на покупки</SectionLabel>
+              <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:14,overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead>
+                    <tr><Th sticky bg="#fff"></Th>{months.map(m=>{const mc=mColors[m];return <th key={m} colSpan={5} style={{textAlign:"center",padding:"10px 0 6px",borderBottom:`3px solid ${mc}`,background:`${mc}08`}}><MonthBadge label={pData[m].label} color={mc}/></th>})}</tr>
+                    <tr style={{borderBottom:"1px solid #e2e8f0"}}><Th sticky bg="#fff">Кампанія</Th>{months.map((m,mi)=>{const bg=mColors[m]+"06";return<><Th key={m+"s"} align="right" bg={bg}>Витрати</Th><Th key={m+"p"} align="center" bg={bg}>Покупки</Th><Th key={m+"rv"} align="right" bg={bg}>Виручка</Th><Th key={m+"ro"} align="center" bg={bg}>ROAS</Th><Th key={m+"d"} align="center" bg={bg}>ДРР</Th></>})}</tr>
+                  </thead>
+                  <tbody>
+                    {(pData[months[0]].camps||[]).map((c,i)=>(
+                      <tr key={c.name} style={{borderBottom:"1px solid #f1f5f9"}}>
+                        <STd>{c.name}</STd>
+                        {months.map((m,mi)=>{const mc=pData[m].camps?pData[m].camps[i]:null;if(!mc)return<><Dash/><Dash/><Dash/><Dash/><Dash br={mi<months.length-1}/></>;
+                          const sp=Math.round(mc.spentUSD*USD);const bg=mColors[m]+"06";const isL=mi<months.length-1;
+                          if(!sp)return<><Dash bg={bg}/><Dash bg={bg}/><Dash bg={bg}/><Dash bg={bg}/><Dash bg={bg} br={isL}/></>;
+                          const roas=mc.rev>0?mc.rev/sp:0;const drr=mc.rev>0?(sp/mc.rev)*100:0;
+                          return<><Td key={m+"s"} align="right" bold bg={bg}>{fmt(sp)} ₴</Td><Td key={m+"p"} align="center" bold bg={bg}>{mc.purchases}</Td><Td key={m+"rv"} align="right" bold bg={bg}>{mc.rev?`${fmt(mc.rev)} ₴`:"—"}</Td><RoasCell key={m+"ro"} val={roas}/><DrrCell key={m+"d"} val={drr>0?drr:null} br={isL}/></>;
+                        })}
+                      </tr>
+                    ))}
+                    <tr style={{borderTop:"2px solid #334155",background:"#f8fafc"}}>
+                      <STd bg="#f8fafc"><strong>Всього</strong></STd>
+                      {months.map((m,mi)=>{const cs=pData[m].camps;if(!cs||!cs.length)return<><Dash bg="#f8fafc"/><Dash bg="#f8fafc"/><Dash bg="#f8fafc"/><Dash bg="#f8fafc"/><Dash bg="#f8fafc" br={mi<months.length-1}/></>;
+                        const tSp=Math.round(cs.reduce((s,c)=>s+c.spentUSD,0)*USD);const tPu=cs.reduce((s,c)=>s+c.purchases,0);const tRv=cs.reduce((s,c)=>s+c.rev,0);
+                        const roas=tRv>0&&tSp>0?tRv/tSp:0;const drr=tRv>0&&tSp>0?(tSp/tRv)*100:0;const isL=mi<months.length-1;
+                        return<><Td key={m+"s"} align="right" bold bg="#f8fafc">{fmt(tSp)} ₴</Td><Td key={m+"p"} align="center" bold bg="#f8fafc">{tPu}</Td><Td key={m+"rv"} align="right" bold bg="#f8fafc">{fmt(tRv)} ₴</Td><RoasCell key={m+"ro"} val={roas}/><Td key={m+"d"} align="center" bold bg="#f8fafc" br={isL}>{fmtPct(drr)}</Td></>;
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </div></>}
+              {months.some(m=>pData[m].leads)&&<><SectionLabel>📋 Кампанії на ліди</SectionLabel>
+              <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:14,overflow:"hidden"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead><tr style={{borderBottom:"1px solid #e2e8f0"}}><Th>Місяць</Th><Th align="right">Витрати</Th><Th align="right">Охоплення</Th><Th align="right">Кліки</Th><Th align="center">Ліди</Th><Th align="right">Ціна ліда</Th></tr></thead>
+                  <tbody>{months.map((m,i)=>{const d=pData[m].leads;const mc=mColors[m];
+                    if(!d)return <tr key={m} style={{borderBottom:"1px solid #f1f5f9"}}><Td><MonthBadge label={pData[m].label} color={mc}/></Td><Dash/><Dash/><Dash/><Dash/><Dash/></tr>;
+                    const sp=Math.round(d.spentUSD*USD);const cpl=d.results>0?Math.round(sp/d.results):0;
+                    return <tr key={m} style={{borderBottom:i<months.length-1?"1px solid #f1f5f9":"none"}}><Td><MonthBadge label={pData[m].label} color={mc}/></Td><Td align="right" bold>{fmt(sp)} ₴</Td><Td align="right">{fmt(d.reach)}</Td><Td align="right">{fmt(d.clicks)}</Td><Td align="center" bold>{d.results}</Td><Td align="right" bold color={cpl<1000?"#059669":"#d97706"}>{fmt(cpl)} ₴</Td></tr>;
+                  })}</tbody>
+                </table>
+              </div></>}
+              {months.some(m=>pData[m].traffic)&&<><SectionLabel>📈 Трафік</SectionLabel>
+              <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:14,overflow:"hidden"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead><tr style={{borderBottom:"1px solid #e2e8f0"}}><Th>Місяць</Th><Th align="right">Витрати</Th><Th align="right">Охоплення</Th><Th align="right">Кліки</Th><Th align="right">CPC</Th></tr></thead>
+                  <tbody>{months.map((m,i)=>{const d=pData[m].traffic;const mc=mColors[m];
+                    if(!d)return <tr key={m} style={{borderBottom:"1px solid #f1f5f9"}}><Td><MonthBadge label={pData[m].label} color={mc}/></Td><Dash/><Dash/><Dash/><Dash/></tr>;
+                    const sp=Math.round(d.spentUSD*USD);const cpc=d.clicks>0?Math.round(sp/d.clicks):0;
+                    return <tr key={m} style={{borderBottom:i<months.length-1?"1px solid #f1f5f9":"none"}}><Td><MonthBadge label={pData[m].label} color={mc}/></Td><Td align="right" bold>{fmt(sp)} ₴</Td><Td align="right">{fmt(d.reach)}</Td><Td align="right">{d.clicks?fmt(d.clicks):"—"}</Td><Td align="right">{cpc?`${fmt(cpc)} ₴`:"—"}</Td></tr>;
+                  })}</tbody>
+                </table>
+              </div></>}
+              <div style={{marginTop:10,fontSize:10,color:"#94a3b8"}}>* Витрати конвертовані за курсом {USD} ₴/$</div>
+            </div>
+          )}
+        </>}
+      </div>
+    </div>
+  );
+}
+
+const root=ReactDOM.createRoot(document.getElementById("root"));root.render(<Dashboard/>);</script></body></html>
